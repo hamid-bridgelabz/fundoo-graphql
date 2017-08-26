@@ -12,88 +12,10 @@ var GraphQLList = graphql.GraphQLList
 var GraphQLNonNull = graphql.GraphQLNonNull
 var GraphQLSchema = graphql.GraphQLSchema
 var GraphQLInputObjectType = graphql.GraphQLInputObjectType
-
+var { EmployeeINAcedmicType,EmployeeOPAcedmicType,EmployeeINBankType,EmployeeBankType } = require("./bank_acedmic")
+var {Employee} = require("./employeeSchema")
 mongoose.Promise = Promise;
 // Mongoose Schema definition
-var Employee = mongoose.model('employee', new Schema({
-  employeeObjectId: mongoose.Schema.Types.ObjectId,
-  firstName: {
-    type: String,
-    trim: true,
-    default: ""
-  },
-  middleName: { // No earlier existance, New implementation - 11th April 2017
-    type: String,
-    trim: true,
-    required: false,
-    default: ""
-  },
-  lastName: {
-    type: String,
-    trim: true,
-    required: false,
-    default: ""
-  },
-  academic:[{
-    isDiploma: {
-      type: Boolean,
-      default: false
-    },
-    isDegree: {
-      type: Boolean,
-      default: false
-    },
-    qualification: {
-      type: String,
-      trim: true,
-      default: ""
-    },
-    university: {
-      type: String,
-      trim: true,
-      default: ""
-    },
-    collage: {
-      type: String,
-      trim: true,
-      default: ""
-    },
-    discipline: {
-      type: String,
-      trim: true,
-      default: ""
-    },
-    aggregatePercentage: {
-      type: Number,
-      default: 0
-    },
-    finalYearPercentage: {
-      type: Number,
-      default: 0
-    },
-    startDate: {
-      type: Date,
-      default: null
-    },
-    endDate: {
-      type: Date,
-      default: null
-    },
-    yearOfPassing: {
-      type: Date,
-      default: null
-    },
-    comments: {
-      type: String,
-      default: ""
-    }
-  }],
-  verified:{
-    type:Boolean,
-    default:false
-  }
-
-}))
 
 /*
  * I’m sharing my credentials here.
@@ -113,138 +35,7 @@ mongoose.connect(process.env.COMPOSE_URI || COMPOSE_URI_DEFAULT,
   });
 /** END */
 
-var EmployeeBankType = new GraphQLObjectType({
-  name: 'bankDetails',
-  fields: () => ({
-    bankName: {
-      type: GraphQLString,
-      description: 'Employee first name'
-    },
-    accountNumber:{
-      type: GraphQLString,
-      description: 'Employee last name'
-    },
-    ifscCode:{
-      type: GraphQLString,
-      description: 'Employee middle name'
-    },
-    panNumber: {
-      type: GraphQLString,
-      description: 'PAN Number name'
-    },
-    payStipend: {
-      type: GraphQLBoolean,
-      description: 'Employee pay'
-    }
-  })
-});
-var EmployeeOPAcedmicType = new GraphQLObjectType({
-name: 'acedmicOPDetails',
-  fields: () => ({
-      isDiploma: {
-            type: GraphQLBoolean,
-            description:"isDiploma or not"
-          },
-          isDegree: {
-            type: GraphQLBoolean,
-            default:false,
-            description:"isDegree or not"
-          },
-          qualification: {
-            type: GraphQLString,
-            description: "course name "
-          },
-          university: {
-            type: GraphQLString,
-            description:"university name"
-          },
-          collage: {
-            type: GraphQLString,
-            description:"collage name"
-          },
-          discipline: {
-            type: GraphQLString,
-            description:"discipline eg:CS, COMP,MECH"
-          },
-          aggregatePercentage: {
-            type: GraphQLFloat,
-            description:"aggregate Percentage"
-          },
-          finalYearPercentage: {
-            type: GraphQLFloat,
-            description:"final year Percentage"
-          },
-          startDate: {
-            type: GraphQLDate,
-            description :"start Date"
-          },
-          endDate: {
-            type: GraphQLDate,
-            description :"end date"
-          },
-          yearOfPassing: {
-            type: GraphQLString,
-            description:"year of passing"
-          },
-          comments: {
-            type: GraphQLString,
-            description : "comments"
-          }
-      })
-});
-var EmployeeINAcedmicType = new GraphQLInputObjectType({
-  name: 'acedmicINDetails',
-  fields: () => ({
-      isDiploma: {
-            type: GraphQLBoolean,
-            description:"isDiploma or not"
-          },
-          isDegree: {
-            type: GraphQLBoolean,
-            description:"isDegree or not"
-          },
-          qualification: {
-            type: GraphQLString,
-            description: "course name "
-          },
-          university: {
-            type: GraphQLString,
-            description:"university name"
-          },
-          collage: {
-            type: GraphQLString,
-            description:"collage name"
-          },
-          discipline: {
-            type: GraphQLString,
-            description:"discipline eg:CS, COMP,MECH"
-          },
-          aggregatePercentage: {
-            type: GraphQLFloat,
-            description:"aggregate Percentage"
-          },
-          finalYearPercentage: {
-            type: GraphQLFloat,
-            description:"final year Percentage"
-          },
-          startDate: {
-            type: GraphQLDate,
-            description :"start Date"
-          },
-          endDate: {
-            type: GraphQLDate,
-            description :"end date"
-          },
-          yearOfPassing: {
-            type: GraphQLString,
-            description:"year of passing"
-          },
-          comments: {
-            type: GraphQLString,
-            description : "comments"
-          }
-      })
-  });
+
 var EmployeeType = new GraphQLObjectType({
   name: 'employees',
   fields: () => ({
@@ -316,10 +107,10 @@ var MutationAddEmployee = {
       name: 'Middle Name',
       type: new GraphQLNonNull(GraphQLString)
     },
-    // bank:{
-    //  name: 'Bank Details',
-    //   type: EmployeeBankType
-    // },
+    bank:{
+     name: 'Bank Details',
+      type: EmployeeINBankType
+    },
     academic:{
       name:"academic details",
       type : new GraphQLList(EmployeeINAcedmicType)
@@ -336,139 +127,56 @@ var MutationAddEmployee = {
     })
   }
 }
+var MutationUpdateEmployee = {
+  type: EmployeeType,
+  description: 'Add Employee',
+  args: {
+    employeeObjectId:{
+      name:"Employee ID",
+      type : new GraphQLNonNull(GraphQLID)
+    },
+    firstName: {
+      name: 'Employee first name',
+      type: GraphQLString
+    },
+    lastName: {
+      name: 'Employee Last Name',
+      type: GraphQLString
+    },
+    middleName:{
+      name: 'Middle Name',
+      type: GraphQLString
+    },
+    bank:{
+     name: 'Bank Details',
+      type: EmployeeINBankType
+    },
+    academic:{
+      name:"academic details",
+      type : new GraphQLList(EmployeeINAcedmicType)
+    }
+  },
+  resolve: (root, args) => {
+    return new Promise((resolve, reject) => {
+      Employee.findOneAndUpdate({_id:args.employeeObjectId},args,{"new":true},function (err,data) {
+        if (err) reject(err)
+        else resolve(data)
+      })
+    })
+  }
+}
 
 
-// var MutationDestroy = {
-//   type: TodoType,
-//   description: 'Destroy the todo',
-//   args: {
-//     id: {
-//       name: 'Todo Id',
-//       type: new GraphQLNonNull(GraphQLString)
-//     }
-//   },
-//   resolve: (root, args) => {
-//     return new Promise((resolve, reject) => {
-//       TODO.findById(args.id, (err, todo) => {
-//         if (err) {
-//           reject(err)
-//         } else if (!todo) {
-//           reject('Todo NOT found')
-//         } else {
-//           todo.remove((err) => {
-//             if (err) reject(err)
-//             else resolve(todo)
-//           })
-//         }
-//       })
-//     })
-//   }
-// }
 
-// var MutationToggleAll = {
-//   type: new GraphQLList(TodoType),
-//   description: 'Toggle all todos',
-//   args: {
-//     checked: {
-//       name: 'Todo Id',
-//       type: new GraphQLNonNull(GraphQLBoolean)
-//     }
-//   },
-//   resolve: (root, args) => {
-//     return new Promise((resolve, reject) => {
-//       TODO.find((err, todos) => {
-//         if (err) {
-//           reject(err)
-//           return
-//         }
-//         TODO.update({
-//           _id: {
-//             $in: todos.map((todo) => todo._id)
-//           }
-//         }, {
-//           completed: args.checked
-//         }, {
-//           multi: true
-//         }, (err) => {
-//           if (err) reject(err)
-//           else promiseListAll().then(resolve, reject)
-//         })
-//       })
-//     })
-//   }
-// }
-
-// var MutationClearCompleted = {
-//   type: new GraphQLList(TodoType),
-//   description: 'Clear completed',
-//   resolve: () => {
-//     return new Promise((resolve, reject) => {
-//       TODO.find({completed: true}, (err, todos) => {
-//         if (err) {
-//           reject(err)
-//         } else {
-//           TODO.remove({
-//             _id: {
-//               $in: todos.map((todo) => todo._id)
-//             }
-//           }, (err) => {
-//             if (err) reject(err)
-//             else resolve(todos)
-//           })
-//         }
-//       })
-//     })
-//   }
-// }
-
-// var MutationSave = {
-//   type: TodoType,
-//   description: 'Edit a todo',
-//   args: {
-//     id: {
-//       name: 'Todo Id',
-//       type: new GraphQLNonNull(GraphQLString)
-//     },
-//     title: {
-//       name: 'Todo title',
-//       type: new GraphQLNonNull(GraphQLString)
-//     }
-//   },
-//   resolve: (root, args) => {
-//     return new Promise((resolve, reject) => {
-//       TODO.findById(args.id, (err, todo) => {
-//         if (err) {
-//           reject(err)
-//           return
-//         }
-
-//         if (!todo) {
-//           reject('Todo NOT found')
-//           return
-//         }
-
-//         todo.title = args.title
-//         todo.save((err) => {
-//           if (err) reject(err)
-//           else resolve(todo)
-//         })
-//       })
-//     })
-//   }
-// }
 
 var MutationType = new GraphQLObjectType({
   name: 'Mutation',
   fields: {
-    addEmployee: MutationAddEmployee
+    addEmployee: MutationAddEmployee,
+    updateEmployee: MutationUpdateEmployee
   }
-})
-// ,
-//     toggle: MutationToggle,
-//     toggleAll: MutationToggleAll,
-//     destroy: MutationDestroy,
-//     clearCompleted: MutationClearCompleted,
-//     save: MutationSave
+});
+
 module.exports = new GraphQLSchema({
   query: QueryType,
   mutation: MutationType
