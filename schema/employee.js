@@ -105,10 +105,12 @@ var Employee = mongoose.model('employee', new Schema({
  * COMPOSE_URI=mongodb://example:example@127.0.0.1:27017/todo
  */
 var COMPOSE_URI_DEFAULT = 'mongodb://localhost:27017/graphqlfundoohr'
-mongoose.createConnection(process.env.COMPOSE_URI || COMPOSE_URI_DEFAULT, function (error) {
-  if (error) console.error(error)
-  else console.log('mongo connected')
-})
+mongoose.connect(process.env.COMPOSE_URI || COMPOSE_URI_DEFAULT,
+  {useMongoClient: true}).catch(function (error) {
+  console.error('mongo connection fail::',error);
+}).then(function(mongodb) {
+  console.log('mongo connected');
+  });
 /** END */
 
 var EmployeeBankType = new GraphQLObjectType({
@@ -324,7 +326,6 @@ var MutationAddEmployee = {
     }
   },
   resolve: (root, args) => {
-    console.log(JSON.stringify(args,0,4));
     var newEmployee = new Employee(args);
     newEmployee.employeeObjectId = newEmployee._id
     return new Promise((resolve, reject) => {
